@@ -6,20 +6,27 @@ from rest_framework.views import APIView
 from user_app import models
 from rest_framework.authtoken.models import Token
 
+
+@api_view(['POST'])
+def logout_view(request):
+    if request.method=='POST':
+        request.user.auth_token.delete()
+        return Response(status=200)
+
 @api_view(['POST'])
 def registrationView(request):
     if request.method=='POST':
         serializer=RegistrationSerializer(data=request.data)
-        dataa={}
+        data={}
         if serializer.is_valid():
             account=serializer.save()
-            dataa['user']=account.username
-            dataa['email']=account.email
-            dataa['token']=Token.objects.get(data=account).key
+            data['user']=account.username
+            data['email']=account.email
+            data['token']=Token.objects.get(user=account).key
         else:
-            dataa=serializer.errors
+            data=serializer.errors
             
-        return Response(dataa)
+        return Response(data)
 
 
 # class registrationView(APIView):
