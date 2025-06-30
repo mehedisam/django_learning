@@ -10,11 +10,14 @@ from rest_framework.views import APIView
 from rest_framework import mixins
 from rest_framework import generics
 from .permission import ReviewOwnerOrReadOnly,IsAdminOrReadOnly
+from .throttling import ReviewCreateThrottling,ReviewListThrottling
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
 
 class ReviewCreate(generics.CreateAPIView):
     serializer_class = ReviewSerializer
     permission_classes = [IsAuthenticated]
-    
+    throttle_classes=[ReviewCreateThrottling]
 
     def get_queryset(self):
         return Review.objects.all()
@@ -40,7 +43,9 @@ class ReviewCreate(generics.CreateAPIView):
 class ReviewList(generics.ListAPIView):
     # queryset = Review.objects.all()
     serializer_class = ReviewSerializer
-    
+    # throttle_classes=[ReviewListThrottling]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['review_user__username','active']
 
     def get_queryset(self):
         pk=self.kwargs['pk']
@@ -117,9 +122,16 @@ class StreamListDetailAV(APIView):
         return Response(status=204)
 
 class WatchListAV(APIView):
-    permission_classes = [IsAdminOrReadOnly]
+    #permission_classes = [IsAdminOrReadOnly]
     def get(self, request):
-        movielist = WatchList.objects.all()
+        search_query = request.query_params.get('search')
+        ordering = request.query_params.get('ordering') 
+        if search_query:
+            movielist = WatchList.objects.filter(title__icontains=search_query)
+        else:
+            movielist = WatchList.objects.all()
+        if ordering:
+            movielist=movielist.order_by(ordering)
         serializer = WatchlistSerializer(movielist, many=True)
         return Response(serializer.data,status=200)
     
