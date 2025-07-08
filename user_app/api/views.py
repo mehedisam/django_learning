@@ -34,7 +34,7 @@ def registrationView(request):
         else:
             data=serializer.errors
             
-        return Response(data)
+        return Response(data,status=201)
 
 
 # class registrationView(APIView):

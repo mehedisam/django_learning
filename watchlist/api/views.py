@@ -13,6 +13,7 @@ from .permission import ReviewOwnerOrReadOnly,IsAdminOrReadOnly
 from .throttling import ReviewCreateThrottling,ReviewListThrottling
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
+from .pagination import ReviewListPagination
 
 class ReviewCreate(generics.CreateAPIView):
     serializer_class = ReviewSerializer
@@ -44,8 +45,10 @@ class ReviewList(generics.ListAPIView):
     # queryset = Review.objects.all()
     serializer_class = ReviewSerializer
     # throttle_classes=[ReviewListThrottling]
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['review_user__username','active']
+    # filter_backends = [DjangoFilterBackend]
+
+    # filterset_fields = ['review_user__username','active']
+    pagination_class=ReviewListPagination
 
     def get_queryset(self):
         pk=self.kwargs['pk']
